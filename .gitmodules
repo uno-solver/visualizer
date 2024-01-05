@@ -1,0 +1,3 @@
+[submodule "logs"]
+	path = logs
+	url = https://github.com/uno-solver/logs.git
