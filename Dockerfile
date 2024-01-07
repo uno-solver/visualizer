@@ -9,4 +9,4 @@ RUN pip install -r requirements.txt
 
 EXPOSE 8001
 
-CMD [ "python", "main.py" ]
+CMD [ "python", "src/main.py" ]
