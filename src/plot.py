@@ -1,95 +1,111 @@
 from collections import defaultdict
+from math import inf
 from sys import argv
+import PIL
 import matplotlib.pyplot as plt
-from numpy import Infinity, average
 
 from structures import *
 from constants import *
 
-dealerName = argv[1]
-playerName = defaultdict(str)
 
-filePath = LOGS_DIR + f"{dealerName}.log"
+def plot(dealerName, turns=None, saveName=None):
+    if saveName == None:
+        saveName = dealerName
 
-with open(filePath, 'r') as f:
-    for line in f:
-        data = json.loads(line)
+    filePath = LOGS_DIR + f"{dealerName}.log"
+    imagePath = f"{ IMAGES_DIR }{ saveName }.png"
 
-        if data["event"] != "join-room":
-            break
+    if os.path.isfile(imagePath):
+        return imagePath
 
-        playerName[data["player"]] = data["contents"]["player_name"].split("_")[0]
+    if turns == None:
+        game = Game(filePath)
+        turns = game.turns
 
-game = Game(filePath)
-turns = game.turns
+    playerName = defaultdict(str)
 
-n = len(turns)
+    with open(filePath, 'r') as f:
+        for line in f:
+            data = json.loads(line)
 
-winCount = defaultdict(int)
-totalScore = defaultdict(int)
+            if data["event"] != "join-room":
+                break
 
-winCountList = defaultdict(lambda: [0])
-totalScoreList = defaultdict(lambda: [0])
+            playerName[data["player"]] = data["contents"]["player_name"].split("_")[0]
 
-bestGain = defaultdict(lambda: (-Infinity, 0))
-worstLose = defaultdict(lambda: (Infinity, 0))
+    n = len(turns)
 
-for i, turn in enumerate(turns, 1):
-    print(f"\r{ i } / { n }", end="")
+    winCount = defaultdict(int)
+    totalScore = defaultdict(int)
 
-    for activity in turn.activities:
-        if activity.event == "first-player":
-            for player in activity.contents["play_order"]:
-                winCount[playerName[player]] += 0
+    winCountList = defaultdict(lambda: [0])
+    totalScoreList = defaultdict(lambda: [0])
 
-        if activity.event == "finish-turn":
-            winCount[playerName[activity.contents["winner"]]] += 1
+    bestGain = defaultdict(lambda: (-inf, 0))
+    worstLose = defaultdict(lambda: (inf, 0))
 
-            for code, score in activity.contents["score"].items():
-                player = playerName[code]
+    for i, turn in enumerate(turns, 1):
+        print(f"\r{ i } / { n }", end="")
 
-                totalScore[player] += score
+        for activity in turn.activities:
+            if activity.event == "first-player":
+                for player in activity.contents["play_order"]:
+                    winCount[playerName[player]] += 0
 
-                if bestGain[player][0] < score:
-                    bestGain[player] = (score, i)
+            if activity.event == "finish-turn":
+                winCount[playerName[activity.contents["winner"]]] += 1
 
-                if worstLose[player][0] > score:
-                    worstLose[player] = (score, i)
+                for code, score in activity.contents["score"].items():
+                    player = playerName[code]
 
-    for player, count in winCount.items():
-        winCountList[player].append(count - i / 4)
+                    totalScore[player] += score
 
-    for player, score in totalScore.items():
-        totalScoreList[player].append(score)
-print()
+                    if bestGain[player][0] < score:
+                        bestGain[player] = (score, i)
 
-print(dict(bestGain))
-print(dict(worstLose))
+                    if worstLose[player][0] > score:
+                        worstLose[player] = (score, i)
 
-fig = plt.figure(figsize=(10, 10))
+        for player, count in winCount.items():
+            winCountList[player].append(count - i / 4)
 
-ax1 = fig.add_subplot(2, 1, 1)
-ax2 = fig.add_subplot(2, 1, 2)
+        for player, score in totalScore.items():
+            totalScoreList[player].append(score)
+    print()
 
-ax1.set_title("Win Count (diff. from ave.)")
-ax2.set_title("Total Score")
+    print(dict(bestGain))
+    print(dict(worstLose))
 
-ax1.set_xlim(0, n)
-ax2.set_xlim(0, n)
+    fig = plt.figure(figsize=(10, 10))
 
-ax1.grid(axis="y")
-ax2.grid(axis="y")
+    ax1 = fig.add_subplot(2, 1, 1)
+    ax2 = fig.add_subplot(2, 1, 2)
 
-# ax1.hlines([0], 0, n, color="gray", linestyles=":")
-# ax2.hlines([0], 0, n, color="gray", linestyles=":")
+    ax1.set_title("Win Count (diff. from ave.)")
+    ax2.set_title("Total Score")
 
-for player, counts in sorted(winCountList.items()):
-    ax1.plot(counts, linestyle="-", label=player)
+    ax1.set_xlim(0, n)
+    ax2.set_xlim(0, n)
 
-for player, scores in sorted(totalScoreList.items()):
-    ax2.plot(scores, linestyle="-", label=player)
+    ax1.grid(axis="y")
+    ax2.grid(axis="y")
 
-ax1.legend(loc="lower left")
-ax2.legend(loc="lower left")
+    # ax1.hlines([0], 0, n, color="gray", linestyles=":")
+    # ax2.hlines([0], 0, n, color="gray", linestyles=":")
 
-plt.savefig("vis.png")
+    for player, counts in sorted(winCountList.items()):
+        ax1.plot(counts, linestyle="-", label=player)
+
+    for player, scores in sorted(totalScoreList.items()):
+        ax2.plot(scores, linestyle="-", label=player)
+
+    ax1.legend(loc="lower left")
+    ax2.legend(loc="lower left")
+
+    fig.savefig(imagePath)
+
+    return imagePath
+
+
+if __name__ == "__main__":
+    plot(argv[1])

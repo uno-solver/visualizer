@@ -6,6 +6,7 @@
 
 #     https://www.atlassian.com/git/tutorials/saving-changes/gitignore
 
+images/
 
 
 # Compiled Python bytecode

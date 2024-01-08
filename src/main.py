@@ -12,6 +12,7 @@ import os
 
 from constants import *
 from structures import *
+from plot import *
 
 # FasrAPI
 app = FastAPI()
@@ -30,15 +31,17 @@ def root(request: Request):
         if f[-4:] == ".log":
             files.append(f)
 
-    return templates.TemplateResponse("root.html", {
-        "request": request,
-        "files": files
-    })
+    return templates.TemplateResponse("root.html", {"request": request, "files": files})
+
+
+@app.get('/{dealer_name}/plots')
+def plot_png(request: Request, dealer_name):
+    imagePath = plot(dealer_name)
+    return FileResponse(path=imagePath, media_type="/image/png")
 
 
 @app.get("/{dealer_name}")
 def game(request: Request, dealer_name):
-
     dir_path = LOGS_DIR
     file_path = dir_path + f"{dealer_name}.log"
     if not os.path.exists(file_path):
@@ -67,22 +70,20 @@ def game(request: Request, dealer_name):
     # temp_socket_const.remove("finish-turn")
     # temp_socket_const.append("disconnect")
 
-    return templates.TemplateResponse(
-        "game.html", {
-            "request": request,
-            "dealer_name": dealer_name,
-            "N": N,
-            "turn_data": turn_data,
-            "SOCKET_CONST": temp_socket_const
-        })
+    return templates.TemplateResponse("game.html", {
+        "request": request,
+        "dealer_name": dealer_name,
+        "N": N,
+        "turn_data": turn_data,
+        "SOCKET_CONST": temp_socket_const
+    })
 
 
 @app.get("/{dealer_name}/{turn_num}")
 def turn(request: Request, dealer_name, turn_num):
     dir_path = LOGS_DIR + dealer_name
     file_path = f"{dir_path}/{turn_num}.log"
-    if not os.path.exists(file_path) or not os.path.exists(
-            f"{dir_path}/game_data.json"):
+    if not os.path.exists(file_path) or not os.path.exists(f"{dir_path}/game_data.json"):
         raise HTTPException(status_code=404, detail="log_not_found")
     with open(f"{dir_path}/game_data.json") as f:
         game_data = json.load(f)
@@ -107,22 +108,20 @@ def turn(request: Request, dealer_name, turn_num):
     res_list, player_code_list = turn.make_activities()
     players = [base_players[p] for p in player_code_list]
 
-    return templates.TemplateResponse(
-        "turn.html", {
-            "request": request,
-            "dealer_name": dealer_name,
-            "turn_num": turn_num,
-            "players": players,
-            "res_list": res_list
-        })
+    return templates.TemplateResponse("turn.html", {
+        "request": request,
+        "dealer_name": dealer_name,
+        "turn_num": turn_num,
+        "players": players,
+        "res_list": res_list
+    })
 
 
 @app.get("/{dealer_name}/{turn_num}/transformed")
 def transformed_turn(request: Request, dealer_name, turn_num):
     dir_path = LOGS_DIR + dealer_name
     file_path = f"{dir_path}/{turn_num}.log"
-    if not os.path.exists(file_path) or not os.path.exists(
-            f"{dir_path}/game_data.json"):
+    if not os.path.exists(file_path) or not os.path.exists(f"{dir_path}/game_data.json"):
         raise HTTPException(status_code=404, detail="log_not_found")
     with open(f"{dir_path}/game_data.json") as f:
         game_data = json.load(f)
@@ -148,16 +147,14 @@ def transformed_turn(request: Request, dealer_name, turn_num):
     res_list, player_code_list = unpersed_turn.make_activities()
     players = [base_players[p] for p in player_code_list]
 
-    return templates.TemplateResponse(
-        "transformed_turn.html", {
-            "request": request,
-            "dealer_name": dealer_name,
-            "turn_num": turn_num,
-            "players": players,
-            "res_list": res_list
-        })
+    return templates.TemplateResponse("transformed_turn.html", {
+        "request": request,
+        "dealer_name": dealer_name,
+        "turn_num": turn_num,
+        "players": players,
+        "res_list": res_list,
+    })
 
 
 if __name__ == "__main__":
-
     uvicorn.run(app, host="0.0.0.0", port=8001)

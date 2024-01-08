@@ -2,6 +2,12 @@ h1 {
     text-align: center;
 }
 
+.plots {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
 .header-yumekawa {
     font-size: xxx-large;
     text-align: center;

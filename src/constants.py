@@ -1,6 +1,7 @@
 import os
 
 LOGS_DIR = os.getcwd().replace(os.sep, '/') + "/logs/"
+IMAGES_DIR = os.getcwd().replace(os.sep, '/') + "/images/"
 
 SOCKET_CONST = [
     'join-room',
