@@ -53,10 +53,15 @@ def game(request: Request, dealer_name):
         turn_data = game_data["turn_data"]
         N = len(turn_data)
 
+        plot(dealer_name)
+
     else:
         game = Game(file_path)
         game.save_separated_logs()
         turn_data = [t.turn_data for t in game.turns]
+
+        plot(dealer_name, turns=game.turns)
+
         N = len(game.turns)
 
     temp_socket_const = SOCKET_CONST[:]
