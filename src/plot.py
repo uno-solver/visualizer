@@ -81,7 +81,7 @@ def plot(dealerName, turns=None, saveName=None):
     ax1 = fig.add_subplot(2, 1, 1)
     ax2 = fig.add_subplot(2, 1, 2)
 
-    ax1.set_title("Win Count (diff. from ave.)")
+    ax1.set_title("Win Count (deviation)")
     ax2.set_title("Total Score")
 
     ax1.set_xlim(0, n)
