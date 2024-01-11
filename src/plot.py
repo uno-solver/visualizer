@@ -100,7 +100,7 @@ def plot(dealerName, turns=None, saveName=None):
         ax2.plot(scores, linestyle="-", label=player)
 
     ax1.legend(loc="lower left")
-    ax2.legend(loc="lower left")
+    ax2.legend(loc="upper left")
 
     fig.savefig(imagePath)
 
