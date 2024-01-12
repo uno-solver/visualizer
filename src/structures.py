@@ -307,7 +307,7 @@ class Game():
                                ensure_ascii=False)
                     for j in range(len(self.turns[i].activities))
                 ]))
-                print(self.turns[i].activities[0].activity)
+                # print(self.turns[i].activities[0].activity)
         game_data = {}
         game_data["players"] = self.players
         game_data["turn_data"] = [t.turn_data for t in self.turns]
